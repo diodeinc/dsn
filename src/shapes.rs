@@ -18,7 +18,7 @@ pub struct RectangleDescriptor {
     pub corners: (Vertex, Vertex),
 }
 
-#[derive(Sexpr, Debug)]
+#[derive(Sexpr, Debug, PartialEq)]
 #[sexpr(anonymous)]
 pub struct Vertex(pub numeric::Number, pub numeric::Number);
 
@@ -27,4 +27,24 @@ pub enum AperatureType {
     #[default]
     Round,
     Square,
+}
+
+#[derive(Sexpr, Debug)]
+#[sexpr(name = "circle")]
+pub struct CircleDescriptor {
+    pub layer_id: atoms::Id,
+    pub diameter: numeric::PositiveDimension,
+    pub vertex: Option<Vertex>,
+}
+
+#[derive(Sexpr, Debug)]
+pub enum ShapeDescriptor {
+    #[sexpr(anonymous)]
+    Rectangle(RectangleDescriptor),
+    #[sexpr(anonymous)]
+    Circle(CircleDescriptor),
+    // TODO: missing fields
+    #[sexpr(anonymous)]
+    Path(PathDescriptor),
+    // TODO: missing fields
 }

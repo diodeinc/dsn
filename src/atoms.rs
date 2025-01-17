@@ -4,7 +4,7 @@ use chumsky::prelude::*;
 use parser::Parsable;
 use parser_proc_macro::Sexpr;
 
-#[derive(Sexpr, Debug)]
+#[derive(Sexpr, Debug, PartialEq, Eq)]
 #[sexpr(anonymous)]
 pub struct Id(String);
 
@@ -13,6 +13,12 @@ impl Deref for Id {
 
     fn deref(&self) -> &Self::Target {
         &self.0
+    }
+}
+
+impl From<String> for Id {
+    fn from(value: String) -> Self {
+        Self(value)
     }
 }
 

@@ -16,6 +16,12 @@ pub trait Parsable {
         Self: Sized;
 }
 
+impl Parsable for () {
+    fn parser() -> impl Parser<char, (), Error = Simple<char>> {
+        empty().padded()
+    }
+}
+
 impl<T> Parsable for Option<T>
 where
     T: Parsable,

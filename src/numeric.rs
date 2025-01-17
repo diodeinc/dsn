@@ -1,8 +1,8 @@
-use chumsky::{error::Simple, prelude::just, text::int, Parser};
+use chumsky::{error::Simple, prelude::just, text::digits, Parser};
 use parser::Parsable;
 use parser_proc_macro::Sexpr;
 
-#[derive(Sexpr, Debug)]
+#[derive(Sexpr, Debug, PartialEq)]
 #[sexpr(anonymous)]
 pub struct Number {
     pub sign: Option<Sign>,
@@ -32,7 +32,7 @@ impl From<Number> for f64 {
     }
 }
 
-#[derive(Sexpr, Debug)]
+#[derive(Sexpr, Debug, PartialEq)]
 #[sexpr(anonymous)]
 pub enum NumberType {
     #[sexpr(anonymous)]
@@ -43,7 +43,7 @@ pub enum NumberType {
     PosInt(PositiveInteger),
 }
 
-#[derive(Sexpr, Debug)]
+#[derive(Sexpr, Debug, PartialEq, Eq)]
 #[sexpr(anonymous)]
 pub enum Sign {
     #[sexpr(name = "+")]
@@ -75,7 +75,7 @@ impl From<PositiveInteger> for u64 {
 
 impl Parsable for PositiveInteger {
     fn parser() -> impl Parser<char, Self, Error = Simple<char>> {
-        int(10).map(|int: String| Self(int.parse().unwrap()))
+        digits(10).map(|int: String| Self(int.parse().unwrap()))
     }
 }
 
