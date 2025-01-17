@@ -131,7 +131,8 @@ pub enum DimensionUnit {
 
 #[derive(Sexpr, Debug)]
 #[sexpr(anonymous)]
-pub struct PositiveDimension(pub PositiveInteger, pub DimensionUnit);
+// TODO: Technically this is broader than it should be, we should reject a negative number here.
+pub struct PositiveDimension(pub Number);
 
 #[cfg(test)]
 mod tests {
