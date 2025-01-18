@@ -1,43 +1,63 @@
-use parser_proc_macro::Sexpr;
-
 use crate::{atoms, numeric};
+use chumsky::Parser;
+use parser::Parsable;
+use parser_proc_macro::Sexpr;
+use pyo3::prelude::*;
 
-#[derive(Sexpr, Debug)]
+#[derive(Sexpr, Debug, Clone)]
 #[sexpr(name = "path")]
+#[pyclass]
 pub struct PathDescriptor {
+    #[pyo3(get, set)]
     pub layer_id: atoms::Id,
+    #[pyo3(get, set)]
     pub aperature_width: numeric::PositiveDimension,
+    #[pyo3(get, set)]
     pub vertices: Vec<Vertex>,
+    #[pyo3(get, set)]
     pub aperature_type: Option<AperatureType>,
 }
 
-#[derive(Sexpr, Debug)]
+#[derive(Sexpr, Debug, Clone)]
 #[sexpr(name = "rect")]
+#[pyclass]
 pub struct RectangleDescriptor {
+    #[pyo3(get, set)]
     pub layer_id: atoms::Id,
+    #[pyo3(get, set)]
     pub corners: (Vertex, Vertex),
 }
 
-#[derive(Sexpr, Debug, PartialEq)]
+#[derive(Sexpr, Debug, PartialEq, Clone)]
 #[sexpr(anonymous)]
-pub struct Vertex(pub numeric::Number, pub numeric::Number);
+#[pyclass]
+pub struct Vertex(
+    #[pyo3(get, set, name = "x")] pub numeric::Number,
+    #[pyo3(get, set, name = "y")] pub numeric::Number,
+);
 
-#[derive(Sexpr, Debug, Default)]
+#[derive(Sexpr, Debug, Default, Clone, PartialEq)]
+#[pyclass(eq, eq_int)]
 pub enum AperatureType {
     #[default]
     Round,
     Square,
 }
 
-#[derive(Sexpr, Debug)]
+#[derive(Sexpr, Debug, Clone)]
 #[sexpr(name = "circle")]
+#[pyclass]
 pub struct CircleDescriptor {
+    #[pyo3(get, set)]
     pub layer_id: atoms::Id,
+    #[pyo3(get, set)]
     pub diameter: numeric::PositiveDimension,
+    #[pyo3(get, set)]
     pub vertex: Option<Vertex>,
 }
 
-#[derive(Sexpr, Debug)]
+#[derive(Sexpr, Debug, Clone)]
+#[pyclass]
 pub enum ShapeDescriptor {
     #[sexpr(anonymous)]
     Rectangle(RectangleDescriptor),

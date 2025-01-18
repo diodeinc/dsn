@@ -6,6 +6,10 @@ edition = "2021"
 [lib]
 proc-macro = true
 
+[features]
+default = []
+pyo3 = ["dep:pyo3"]
+
 [dependencies]
 syn = { version = "2.0", features = ["full"] }
 quote = "1.0"
@@ -15,3 +19,4 @@ chumsky = "0.9.3"
 convert_case = "0.7.1"
 derive_builder = "0.20.2"
 insta = "1.42.0"
+pyo3 = { version = "0.23", optional = true }

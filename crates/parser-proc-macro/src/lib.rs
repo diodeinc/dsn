@@ -271,6 +271,57 @@ impl<'a> FieldParserConfig<'a> {
     }
 }
 
+fn generate_pyo3_impl_if_enabled(input: &DeriveInput) -> syn::Result<TokenStream> {
+    let ident = &input.ident;
+    let is_pyclass = input
+        .attrs
+        .iter()
+        .any(|attr| attr.path().is_ident("pyclass"));
+    if cfg!(feature = "pyo3") && is_pyclass {
+        let field_ops: Vec<TokenStream> = vec![];
+
+        // if let syn::Data::Struct(syn::DataStruct {
+        //     fields: syn::Fields::Named(named),
+        //     ..
+        // }) = &input.data
+        // {
+        //     for field in &named.named {
+        //         if let Some(ident) = &field.ident {
+        //             let get_ident = format_ident!("get_{}", ident);
+        //             let set_ident = format_ident!("set_{}", ident);
+        //             let ty = &field.ty;
+        //             field_ops.push(quote! {
+        //                 #[getter]
+        //                 fn #get_ident(&self) -> PyResult<#ty> {
+        //                     Ok(self.#ident)
+        //                 }
+
+        //                 #[setter]
+        //                 fn #set_ident(&mut self, value: #ty) -> PyResult<()> {
+        //                     self.#ident = value;
+        //                     Ok(())
+        //                 }
+        //             });
+        //         }
+        //     }
+        // }
+
+        Ok(quote! {
+            #[::pyo3::pymethods]
+            impl #ident {
+                #[new]
+                fn new(s: &str) -> Self {
+                    Self::parser().parse(s).unwrap()
+                }
+
+                #(#field_ops)*
+            }
+        })
+    } else {
+        Ok(TokenStream::new())
+    }
+}
+
 /// Generate and return the Parsable implementation for a struct.
 fn derive_sexpr_impl_struct(input: &DeriveInput) -> syn::Result<TokenStream> {
     let type_ident = &input.ident;
@@ -468,5 +519,12 @@ pub fn derive_sexpr(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
         _ => panic!("sexpr only works with structs and enums"),
     };
 
-    TokenStream::from(expanded).into()
+    let pyo3_impl = generate_pyo3_impl_if_enabled(&input).expect("failed to generate pyo3 impl");
+
+    let full_impl = quote! {
+        #expanded
+        #pyo3_impl
+    };
+
+    TokenStream::from(full_impl).into()
 }

@@ -3,10 +3,19 @@ use std::ops::Deref;
 use chumsky::prelude::*;
 use parser::Parsable;
 use parser_proc_macro::Sexpr;
+use pyo3::prelude::*;
 
-#[derive(Sexpr, Debug, PartialEq, Eq)]
+#[derive(Sexpr, Debug, PartialEq, Eq, Clone)]
+#[pyclass]
 #[sexpr(anonymous)]
 pub struct Id(String);
+
+#[pymethods]
+impl Id {
+    fn __str__(&self) -> PyResult<String> {
+        Ok(self.0.clone())
+    }
+}
 
 impl Deref for Id {
     type Target = String;
@@ -22,8 +31,16 @@ impl From<String> for Id {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
+#[pyclass]
 pub struct Bool(bool);
+
+#[pymethods]
+impl Bool {
+    fn __bool__(&self) -> PyResult<bool> {
+        Ok(self.0)
+    }
+}
 
 impl Parsable for Bool {
     fn parser() -> impl Parser<char, Self, Error = Simple<char>> {

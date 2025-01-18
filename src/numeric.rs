@@ -1,38 +1,35 @@
 use chumsky::{error::Simple, prelude::just, text::digits, Parser};
 use parser::Parsable;
 use parser_proc_macro::Sexpr;
+use pyo3::prelude::*;
 
-#[derive(Sexpr, Debug, PartialEq)]
+#[derive(Sexpr, Debug, PartialEq, Clone)]
+#[pyclass]
 #[sexpr(anonymous)]
 pub struct Number {
     pub sign: Option<Sign>,
     pub number_type: NumberType,
 }
 
-impl From<Number> for f64 {
-    fn from(value: Number) -> Self {
-        let mult: f64 = match value.sign {
-            Some(Sign::Minus) => -1.0,
-            _ => 1.0,
-        };
-        match value.number_type {
-            NumberType::PosInt(int) => {
-                let v: f64 = int.into();
-                v * mult
-            }
-            NumberType::Float(real) => {
-                let v: f64 = real.into();
-                v * mult
-            }
-            NumberType::Rat(rational) => {
-                let v: f64 = rational.into();
-                v * mult
-            }
-        }
+#[pymethods]
+impl Number {
+    fn __float__(&self) -> PyResult<f64> {
+        Ok(f64::from(Number {
+            sign: self.sign.clone(),
+            number_type: self.number_type.clone(),
+        }))
+    }
+
+    fn __int__(&self) -> PyResult<i64> {
+        let val = f64::from(Number {
+            sign: self.sign.clone(),
+            number_type: self.number_type.clone(),
+        });
+        Ok(val as i64)
     }
 }
 
-#[derive(Sexpr, Debug, PartialEq)]
+#[derive(Sexpr, Debug, PartialEq, Clone)]
 #[sexpr(anonymous)]
 pub enum NumberType {
     #[sexpr(anonymous)]
@@ -43,7 +40,7 @@ pub enum NumberType {
     PosInt(PositiveInteger),
 }
 
-#[derive(Sexpr, Debug, PartialEq, Eq)]
+#[derive(Sexpr, Debug, PartialEq, Eq, Clone)]
 #[sexpr(anonymous)]
 pub enum Sign {
     #[sexpr(name = "+")]
@@ -52,8 +49,16 @@ pub enum Sign {
     Minus,
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[pyclass]
 pub struct PositiveInteger(pub u64);
+
+#[pymethods]
+impl PositiveInteger {
+    fn __int__(&self) -> PyResult<i64> {
+        Ok(self.0 as i64)
+    }
+}
 
 impl PositiveInteger {
     pub fn len(&self) -> u32 {
@@ -79,8 +84,16 @@ impl Parsable for PositiveInteger {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[pyclass]
+#[derive(Debug, PartialEq, Clone)]
 pub struct Real(pub f64);
+
+#[pymethods]
+impl Real {
+    fn __float__(&self) -> PyResult<f64> {
+        Ok(self.0)
+    }
+}
 
 impl Parsable for Real {
     fn parser() -> impl Parser<char, Self, Error = Simple<char>> {
@@ -102,8 +115,26 @@ impl From<Real> for f64 {
     }
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[pyclass]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Rational(pub u64, pub u64);
+
+#[pymethods]
+impl Rational {
+    fn __float__(&self) -> PyResult<f64> {
+        Ok(f64::from(self.clone()))
+    }
+
+    #[getter]
+    fn numerator(&self) -> u64 {
+        self.0
+    }
+
+    #[getter]
+    fn denominator(&self) -> u64 {
+        self.1
+    }
+}
 
 impl Parsable for Rational {
     fn parser() -> impl Parser<char, Self, Error = Simple<char>> {
@@ -120,7 +151,8 @@ impl From<Rational> for f64 {
     }
 }
 
-#[derive(Sexpr, Debug)]
+#[derive(Sexpr, Debug, Clone, PartialEq)]
+#[pyclass(eq, eq_int)]
 pub enum DimensionUnit {
     Inch,
     Mil,
@@ -129,10 +161,41 @@ pub enum DimensionUnit {
     Um,
 }
 
-#[derive(Sexpr, Debug)]
+#[derive(Sexpr, Debug, Clone)]
 #[sexpr(anonymous)]
+#[pyclass]
 // TODO: Technically this is broader than it should be, we should reject a negative number here.
 pub struct PositiveDimension(pub Number);
+
+#[pymethods]
+impl PositiveDimension {
+    fn __float__(&self) -> PyResult<f64> {
+        Ok(f64::from(self.0.clone()))
+    }
+}
+
+impl From<Number> for f64 {
+    fn from(value: Number) -> Self {
+        let mult: f64 = match value.sign {
+            Some(Sign::Minus) => -1.0,
+            _ => 1.0,
+        };
+        match value.number_type {
+            NumberType::PosInt(int) => {
+                let v: f64 = int.into();
+                v * mult
+            }
+            NumberType::Float(real) => {
+                let v: f64 = real.into();
+                v * mult
+            }
+            NumberType::Rat(rational) => {
+                let v: f64 = rational.into();
+                v * mult
+            }
+        }
+    }
+}
 
 #[cfg(test)]
 mod tests {

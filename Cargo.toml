@@ -12,9 +12,9 @@ crate-type = ["cdylib", "rlib"]
 chumsky = "0.9.3"
 derive_builder = "0.20.2"
 insta = "1.42.0"
-pyo3 = "0.23.1"
+pyo3 = { version = "0.23.1", features = ["multiple-pymethods"] }
 parser = { path = "./crates/parser" }
-parser-proc-macro = { path = "./crates/parser-proc-macro" }
+parser-proc-macro = { path = "./crates/parser-proc-macro", features = ["pyo3"] }
 
 [workspace]
 members = ["crates/*"]
