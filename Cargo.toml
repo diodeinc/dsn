@@ -8,11 +8,15 @@ edition = "2021"
 name = "dsn"
 crate-type = ["cdylib", "rlib"]
 
+[features]
+extension-module = ["pyo3/extension-module"]
+default = ["extension-module"]
+
 [dependencies]
 chumsky = "0.9.3"
 derive_builder = "0.20.2"
 insta = "1.42.0"
-pyo3 = { version = "0.23.1", features = ["multiple-pymethods", "abi3-py38", "extension-module"] }
+pyo3 = { version = "0.23.1", features = ["multiple-pymethods", "abi3-py38"] }
 parser = { path = "./crates/parser" }
 parser-proc-macro = { path = "./crates/parser-proc-macro", features = ["pyo3"] }
 
