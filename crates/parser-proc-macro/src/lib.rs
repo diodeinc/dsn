@@ -153,11 +153,11 @@ impl<'a> StructParserConfig<'a> {
             .map(|field| TokenStream::from(field.generate_impl()))
             .collect::<Vec<TokenStream>>();
 
-        let expanded = match (&self.parse_as_name, &self.style) {
-            (Some(name), StructStyle::Unit) => quote! {
+        let expanded = match (&self.parse_as_name, &self.style, field_parser_impls.len()) {
+            (Some(name), StructStyle::Unit, _) | (Some(name), _, 0) => quote! {
                 let #parser_ident = parser::keyword(#name).padded();
             },
-            (Some(name), _) => quote! {
+            (Some(name), _, _) => quote! {
                 #(#field_parser_impls)*
                 let #parser_ident = parser::lparen()
                     .ignore_then(parser::keyword(#name))
@@ -165,7 +165,7 @@ impl<'a> StructParserConfig<'a> {
                     .then_ignore(parser::rparen())
                     .padded();
             },
-            (None, _) => quote! {
+            (None, _, _) => quote! {
                 #(#field_parser_impls)*
                 let #parser_ident = empty()
                     #(.then(#field_parser_idents))*

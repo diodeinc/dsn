@@ -23,7 +23,7 @@ mod tests {
     #[test]
     fn test_parse_custom_name() {
         let parser = TestStructCustomName::parser();
-        let result = parser.parse("(custom_name)");
+        let result = parser.parse("custom_name");
         assert!(result.is_ok());
     }
 
@@ -89,11 +89,12 @@ mod tests {
             #[sexpr(name = "data")]
             data: String,
         },
-        C,
+        C(),
+        D,
     }
 
     #[test]
-    fn test_parse_enum_unnamed() {
+    fn test_parse_enum_case_unnamed() {
         let parser = TestEnum::parser();
         let result = parser.parse("(a hello)");
         assert!(result.is_ok());
@@ -105,7 +106,7 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_enum_named() {
+    fn test_parse_enum_case_named() {
         let parser = TestEnum::parser();
         let result = parser.parse("(b (data world))");
         assert!(result.is_ok());
@@ -117,11 +118,19 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_enum_unit() {
+    fn test_parse_enum_case_unit() {
         let parser = TestEnum::parser();
         let result = parser.parse("c");
         assert!(result.is_ok());
         assert_debug_snapshot!(result.unwrap(), @"C");
+    }
+
+    #[test]
+    fn test_parse_enum_case_empty() {
+        let parser = TestEnum::parser();
+        let result = parser.parse("d");
+        assert!(result.is_ok());
+        assert_debug_snapshot!(result.unwrap(), @"D");
     }
 
     #[derive(Sexpr, Debug)]
