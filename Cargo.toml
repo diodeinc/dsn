@@ -6,13 +6,13 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [lib]
 name = "dsn"
-crate-type = ["cdylib"]
+crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 chumsky = "0.9.3"
 derive_builder = "0.20.2"
 insta = "1.42.0"
-pyo3 = { version = "0.23.1", features = ["multiple-pymethods"] }
+pyo3 = { version = "0.23.1", features = ["multiple-pymethods", "abi3-py38", "extension-module"] }
 parser = { path = "./crates/parser" }
 parser-proc-macro = { path = "./crates/parser-proc-macro", features = ["pyo3"] }
 
