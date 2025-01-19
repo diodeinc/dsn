@@ -88,7 +88,7 @@ pub enum QuoteChar {
 }
 
 #[pymodule]
-mod structure {
+pub mod structure {
     use super::*;
 
     #[derive(Sexpr, Debug, Clone)]
@@ -264,7 +264,7 @@ mod structure {
 }
 
 #[pymodule]
-mod placement {
+pub mod placement {
     use super::*;
 
     #[derive(Sexpr, Debug, Clone)]
@@ -321,7 +321,7 @@ mod placement {
 }
 
 #[pymodule]
-mod library {
+pub mod library {
     use shapes::ShapeDescriptor;
     use structure::{ClearanceDescriptor, UserPropertyDescriptor};
 
@@ -503,7 +503,7 @@ mod library {
 }
 
 #[pymodule]
-mod network {
+pub mod network {
     use structure::RuleDescriptor;
 
     use super::*;
@@ -637,7 +637,7 @@ mod network {
 }
 
 #[pymodule]
-mod wiring {
+pub mod wiring {
     use super::*;
 
     #[derive(Sexpr, Debug, Clone)]
