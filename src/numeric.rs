@@ -1,4 +1,4 @@
-use chumsky::{error::Simple, prelude::just, text::digits, Parser};
+use chumsky::{prelude::just, text::digits, Parser};
 use parser::Parsable;
 use parser_proc_macro::Sexpr;
 use pyo3::prelude::*;
@@ -78,9 +78,11 @@ impl From<PositiveInteger> for u64 {
     }
 }
 
-impl Parsable for PositiveInteger {
-    fn parser() -> impl Parser<char, Self, Error = Simple<char>> {
-        digits(10).map(|int: String| Self(int.parse().unwrap()))
+impl<'a> Parsable<'a> for PositiveInteger {
+    fn parser() -> chumsky::BoxedParser<'a, char, Self, chumsky::error::Simple<char>> {
+        digits(10)
+            .map(|int: String| Self(int.parse().unwrap()))
+            .boxed()
     }
 }
 
@@ -95,8 +97,8 @@ impl Real {
     }
 }
 
-impl Parsable for Real {
-    fn parser() -> impl Parser<char, Self, Error = Simple<char>> {
+impl<'a> Parsable<'a> for Real {
+    fn parser() -> chumsky::BoxedParser<'a, char, Self, chumsky::error::Simple<char>> {
         PositiveInteger::parser()
             .then_ignore(just('.'))
             .then(PositiveInteger::parser())
@@ -106,6 +108,7 @@ impl Parsable for Real {
                 let frac_val: f64 = frac.into();
                 Self(int_val + frac_val / 10_f64.powi(frac_len as i32))
             })
+            .boxed()
     }
 }
 
@@ -136,12 +139,13 @@ impl Rational {
     }
 }
 
-impl Parsable for Rational {
-    fn parser() -> impl Parser<char, Self, Error = Simple<char>> {
+impl<'a> Parsable<'a> for Rational {
+    fn parser() -> chumsky::BoxedParser<'a, char, Self, chumsky::error::Simple<char>> {
         PositiveInteger::parser()
             .then_ignore(just('/'))
             .then(PositiveInteger::parser())
             .map(|(num, denom)| Self(num.into(), denom.into()))
+            .boxed()
     }
 }
 

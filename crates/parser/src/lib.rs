@@ -10,42 +10,42 @@ pub enum Token {
     RParen,
 }
 
-pub trait Parsable {
-    fn parser() -> impl Parser<char, Self, Error = Simple<char>>
+pub trait Parsable<'a> {
+    fn parser() -> BoxedParser<'a, char, Self, Simple<char>>
     where
         Self: Sized;
 }
 
-impl Parsable for () {
-    fn parser() -> impl Parser<char, (), Error = Simple<char>> {
-        empty().padded()
+impl<'a> Parsable<'a> for () {
+    fn parser() -> BoxedParser<'a, char, (), Simple<char>> {
+        empty().padded().boxed()
     }
 }
 
-impl<T> Parsable for Option<T>
+impl<'a, T> Parsable<'a> for Option<T>
 where
-    T: Parsable,
+    T: Parsable<'a> + 'a,
 {
-    fn parser() -> impl Parser<char, Self, Error = Simple<char>> {
-        T::parser().or_not().padded()
+    fn parser() -> BoxedParser<'a, char, Self, Simple<char>> {
+        T::parser().or_not().padded().boxed()
     }
 }
 
-impl<T> Parsable for (T, T)
+impl<'a, T> Parsable<'a> for (T, T)
 where
-    T: Parsable,
+    T: Parsable<'a> + 'a,
 {
-    fn parser() -> impl Parser<char, Self, Error = Simple<char>> {
-        T::parser().then(T::parser()).padded()
+    fn parser() -> BoxedParser<'a, char, Self, Simple<char>> {
+        T::parser().then(T::parser()).padded().boxed()
     }
 }
 
-impl<T> Parsable for Vec<T>
+impl<'a, T> Parsable<'a> for Vec<T>
 where
-    T: Parsable,
+    T: Parsable<'a> + 'a,
 {
-    fn parser() -> impl Parser<char, Self, Error = Simple<char>> {
-        T::parser().repeated().collect().padded()
+    fn parser() -> BoxedParser<'a, char, Self, Simple<char>> {
+        T::parser().repeated().collect().padded().boxed()
     }
 }
 
@@ -70,7 +70,7 @@ pub struct FieldConfig<'a, T> {
 impl<'a, T> FieldConfig<'a, T> {
     pub fn new(name: &'a str, anonymous: bool) -> FieldConfig<'a, T>
     where
-        T: Parsable + 'a,
+        T: Parsable<'a> + 'a,
     {
         FieldConfig {
             name,
@@ -95,8 +95,8 @@ pub fn field<'a, T: 'a>(
     }
 }
 
-impl Parsable for String {
-    fn parser() -> impl Parser<char, Self, Error = Simple<char>> {
+impl<'a> Parsable<'a> for String {
+    fn parser() -> BoxedParser<'a, char, Self, Simple<char>> {
         let quoted = just('"')
             .ignore_then(
                 filter(|c: &char| *c != '"' && *c != '\n')
@@ -114,7 +114,7 @@ impl Parsable for String {
         .map(|chars: Vec<char>| chars.into_iter().collect())
         .padded();
 
-        quoted.or(unquoted)
+        quoted.or(unquoted).boxed()
     }
 }
 

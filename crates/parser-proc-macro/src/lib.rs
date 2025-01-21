@@ -368,40 +368,40 @@ fn derive_sexpr_impl_struct(input: &DeriveInput) -> syn::Result<TokenStream> {
     let implementation = match &struct_parser_config.style {
         StructStyle::Named => {
             quote! {
-                impl parser::Parsable for #type_ident {
-                    fn parser() -> impl chumsky::Parser<char, Self, Error = chumsky::error::Simple<char>> {
+                impl<'a> parser::Parsable<'a> for #type_ident {
+                    fn parser() -> chumsky::BoxedParser<'a, char, Self, chumsky::error::Simple<char>> {
                         use chumsky::prelude::*;
 
                         #parser_impl
                         #parser_ident.map(|#field_destructuring| Self {
                             #(#field_idents),*
-                        })
+                        }).boxed()
                     }
                 }
             }
         }
         StructStyle::Tuple => {
             quote! {
-                impl parser::Parsable for #type_ident {
-                    fn parser() -> impl chumsky::Parser<char, Self, Error = chumsky::error::Simple<char>> {
+                impl<'a> parser::Parsable<'a> for #type_ident {
+                    fn parser() -> chumsky::BoxedParser<'a, char, Self, chumsky::error::Simple<char>> {
                         use chumsky::prelude::*;
 
                         #parser_impl
                         #parser_ident.map(|#field_destructuring| Self(
                             #(#field_idents),*
-                        ))
+                        )).boxed()
                     }
                 }
             }
         }
         StructStyle::Unit => {
             quote! {
-                impl parser::Parsable for #type_ident {
-                    fn parser() -> impl chumsky::Parser<char, Self, Error = chumsky::error::Simple<char>> {
+                impl<'a> parser::Parsable<'a> for #type_ident {
+                    fn parser() -> chumsky::BoxedParser<'a, char, Self, chumsky::error::Simple<char>> {
                         use chumsky::prelude::*;
 
                         #parser_impl
-                        #parser_ident.map(|_| Self)
+                        #parser_ident.map(|_| Self).boxed()
                     }
                 }
             }
@@ -484,28 +484,29 @@ fn derive_sexpr_impl_enum(input: &DeriveInput) -> syn::Result<TokenStream> {
 
     let implementation = if variants.is_empty() {
         quote!(
-            impl parser::Parsable for #type_ident {
-                fn parser() -> impl chumsky::Parser<char, Self, Error = chumsky::error::Simple<char>> {
+            impl<'a> parser::Parsable<'a> for #type_ident {
+                fn parser() -> chumsky::BoxedParser<'a, char, Self, chumsky::error::Simple<char>> {
                     use chumsky::prelude::*;
 
                     chumsky::primitive::filter(|_| false)
                         .map(|_| -> #type_ident {
                             unreachable!("Parser for uninhabited enum should never succeed")
                         })
+                        .boxed()
                 }
             }
         )
     } else {
         quote!(
-           impl parser::Parsable for #type_ident {
-               fn parser() -> impl chumsky::Parser<char, Self, Error = chumsky::error::Simple<char>> {
+           impl<'a> parser::Parsable<'a> for #type_ident {
+               fn parser() -> chumsky::BoxedParser<'a, char, Self, chumsky::error::Simple<char>> {
                    use chumsky::prelude::*;
 
                    #(#variant_parsers)*
                    choice((
                        #(#variant_parser_idents),*
                        ,
-                   ))
+                   )).boxed()
                }
            }
         )

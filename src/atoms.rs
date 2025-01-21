@@ -42,12 +42,13 @@ impl Bool {
     }
 }
 
-impl Parsable for Bool {
-    fn parser() -> impl Parser<char, Self, Error = Simple<char>> {
+impl<'a> Parsable<'a> for Bool {
+    fn parser() -> chumsky::BoxedParser<'a, char, Self, chumsky::error::Simple<char>> {
         choice((
             just("on").map(|_| Self(true)),
             just("off").map(|_| Self(false)),
         ))
+        .boxed()
     }
 }
 

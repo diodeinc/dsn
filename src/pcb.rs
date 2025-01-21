@@ -565,8 +565,8 @@ pub mod network {
         pub pin_id: atoms::Id,
     }
 
-    impl Parsable for PinReference {
-        fn parser() -> impl chumsky::Parser<char, PinReference, Error = Simple<char>> {
+    impl<'a> Parsable<'a> for PinReference {
+        fn parser() -> chumsky::BoxedParser<'a, char, PinReference, chumsky::error::Simple<char>> {
             // For some reason I can't get this to work with atoms::Id::parser(), so falling back
             // to a simpler strategy. This is less expressive than it should be.
             let id_parser = filter(|c: &char| c.is_ascii_alphanumeric()).repeated();
@@ -579,6 +579,7 @@ pub mod network {
                     pin_id: pin_id.into_iter().collect::<String>().into(),
                 })
                 .padded()
+                .boxed()
         }
     }
 
