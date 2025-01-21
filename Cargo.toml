@@ -21,4 +21,4 @@ parser = { path = "./crates/parser" }
 parser-proc-macro = { path = "./crates/parser-proc-macro", features = ["pyo3"] }
 
 [workspace]
-members = ["crates/*"]
+members = ["crates/parser", "crates/parser-proc-macro"]
