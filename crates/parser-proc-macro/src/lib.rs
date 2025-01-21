@@ -311,7 +311,15 @@ fn generate_pyo3_impl_if_enabled(input: &DeriveInput) -> syn::Result<TokenStream
             impl #ident {
                 #[new]
                 fn new(s: &str) -> Self {
-                    Self::parser().parse(s).unwrap()
+                    let res = Self::parser().parse(s);
+
+                    if let Err(e) = &res {
+                        for err in e.into_iter() {
+                            parser::PrettyPrintError::pretty_print(&err, s);
+                        }
+                    }
+
+                    res.expect("parse failed")
                 }
 
                 #(#field_ops)*

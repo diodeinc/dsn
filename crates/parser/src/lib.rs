@@ -122,7 +122,7 @@ pub trait PrettyPrintError {
     fn pretty_print(&self, input: &str);
 }
 
-impl PrettyPrintError for Simple<char> {
+impl PrettyPrintError for &Simple<char> {
     fn pretty_print(&self, input: &str) {
         let report = Report::build(ReportKind::Error, self.span())
             .with_code(3)
