@@ -382,6 +382,9 @@ pub mod library {
         #[pyo3(get, set)]
         pub pins: Vec<PinDescriptor>,
         // TODO: missing fields
+        #[pyo3(get, set)]
+        pub keepouts: Option<Vec<KeepoutDescriptor>>,
+        // TODO: missing fields
     }
 
     #[derive(Sexpr, Debug, Clone, PartialEq)]
@@ -390,6 +393,78 @@ pub mod library {
         Front,
         Back,
         Both,
+    }
+
+    #[derive(Sexpr, Debug, Clone)]
+    #[sexpr(name = "")]
+    #[pyclass]
+    pub struct KeepoutDescriptor {
+        #[pyo3(get, set)]
+        pub keepout_type: KeepoutType,
+
+        #[pyo3(get, set)]
+        pub id: atoms::Id,
+
+        #[pyo3(get, set)]
+        #[sexpr(name = "sequence_number")]
+        pub sequence_number: Option<numeric::PositiveInteger>,
+
+        #[pyo3(get, set)]
+        pub shape: shapes::ShapeDescriptor,
+
+        #[pyo3(get, set)]
+        #[sexpr(name = "rule")]
+        pub rule: Option<ClearanceDescriptor>,
+
+        #[pyo3(get, set)]
+        #[sexpr(name = "place_rule")]
+        pub place_rule: Option<SpacingDescriptor>,
+
+        #[pyo3(get, set)]
+        pub windows: Option<Vec<WindowDescriptor>>,
+    }
+
+    #[derive(Sexpr, Debug, Clone, PartialEq, Eq)]
+    #[pyclass(eq, eq_int)]
+    pub enum KeepoutType {
+        Keepout,
+        PlaceKeepout,
+        ViaKeepout,
+        WireKeepout,
+        BendKeepout,
+        ElongateKeepout,
+    }
+
+    #[derive(Sexpr, Debug, Clone, PartialEq, Eq)]
+    #[pyclass(eq, eq_int)]
+    #[sexpr(anonymous)]
+    pub enum SpacingType {
+        PinPin,
+        PinSmd,
+        PinArea,
+        SmdPin,
+        SmdSmd,
+        SmdArea,
+        AreaPin,
+        AreaSmd,
+        AreaArea,
+    }
+
+    #[derive(Sexpr, Debug, Clone)]
+    #[sexpr(name = "spacing")]
+    #[pyclass]
+    pub struct SpacingDescriptor {
+        #[pyo3(get, set)]
+        // TODO: This is more broad than it should be, we should only allow -1
+        // or positive dimension.
+        pub value: numeric::Number,
+
+        #[pyo3(get, set)]
+        #[sexpr(name = "spacing_type")]
+        pub spacing_type: SpacingType,
+
+        #[pyo3(get, set)]
+        pub side: Option<placement::Side>,
     }
 
     #[derive(Sexpr, Debug, Clone)]

@@ -2445,6 +2445,9 @@ Pcb {
                             property: None,
                         },
                     ],
+                    keepouts: Some(
+                        [],
+                    ),
                 },
                 ImageDescriptor {
                     image_id: Id(
@@ -6304,6 +6307,9 @@ Pcb {
                             property: None,
                         },
                     ],
+                    keepouts: Some(
+                        [],
+                    ),
                 },
                 ImageDescriptor {
                     image_id: Id(
@@ -8067,6 +8073,9 @@ Pcb {
                             property: None,
                         },
                     ],
+                    keepouts: Some(
+                        [],
+                    ),
                 },
                 ImageDescriptor {
                     image_id: Id(
@@ -8758,6 +8767,9 @@ Pcb {
                             property: None,
                         },
                     ],
+                    keepouts: Some(
+                        [],
+                    ),
                 },
                 ImageDescriptor {
                     image_id: Id(
@@ -9449,6 +9461,9 @@ Pcb {
                             property: None,
                         },
                     ],
+                    keepouts: Some(
+                        [],
+                    ),
                 },
                 ImageDescriptor {
                     image_id: Id(
@@ -10140,6 +10155,9 @@ Pcb {
                             property: None,
                         },
                     ],
+                    keepouts: Some(
+                        [],
+                    ),
                 },
                 ImageDescriptor {
                     image_id: Id(
@@ -10831,6 +10849,9 @@ Pcb {
                             property: None,
                         },
                     ],
+                    keepouts: Some(
+                        [],
+                    ),
                 },
                 ImageDescriptor {
                     image_id: Id(
@@ -13290,6 +13311,9 @@ Pcb {
                             property: None,
                         },
                     ],
+                    keepouts: Some(
+                        [],
+                    ),
                 },
                 ImageDescriptor {
                     image_id: Id(
@@ -15749,6 +15773,9 @@ Pcb {
                             property: None,
                         },
                     ],
+                    keepouts: Some(
+                        [],
+                    ),
                 },
             ],
             jumpers: Some(
