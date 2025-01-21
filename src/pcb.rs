@@ -103,6 +103,9 @@ pub mod structure {
         pub boundaries: Vec<BoundaryDescriptor>,
         // TODO: missing fields
         #[pyo3(get, set)]
+        pub planes: Option<Vec<PlaneDescriptor>>,
+        // TODO: missing fields
+        #[pyo3(get, set)]
         pub vias: ViaDescriptor,
         // TODO: missing fields
         #[pyo3(get, set)]
@@ -191,6 +194,26 @@ pub mod structure {
         Paths(Vec<shapes::PathDescriptor>),
         #[sexpr(anonymous)]
         Rectangle(shapes::RectangleDescriptor),
+    }
+
+    #[derive(Sexpr, Debug, Clone)]
+    #[sexpr(name = "plane")]
+    #[pyclass]
+    pub struct PlaneDescriptor {
+        #[pyo3(get, set)]
+        pub net_id: atoms::Id,
+        #[pyo3(get, set)]
+        pub shape: shapes::ShapeDescriptor,
+        #[pyo3(get, set)]
+        pub windows: Option<Vec<WindowDescriptor>>,
+    }
+
+    #[derive(Sexpr, Debug, Clone)]
+    #[sexpr(name = "window")]
+    #[pyclass]
+    pub struct WindowDescriptor {
+        #[pyo3(get, set)]
+        pub shape: shapes::ShapeDescriptor,
     }
 
     #[derive(Sexpr, Debug, Clone)]

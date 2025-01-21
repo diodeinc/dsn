@@ -57,12 +57,28 @@ pub struct CircleDescriptor {
 }
 
 #[derive(Sexpr, Debug, Clone)]
+#[sexpr(name = "polygon")]
+#[pyclass]
+pub struct PolygonDescriptor {
+    #[pyo3(get, set)]
+    pub layer_id: atoms::Id,
+    #[pyo3(get, set)]
+    pub aperature_width: numeric::PositiveDimension,
+    #[pyo3(get, set)]
+    pub vertices: Vec<Vertex>,
+    #[pyo3(get, set)]
+    pub aperature_type: Option<AperatureType>,
+}
+
+#[derive(Sexpr, Debug, Clone)]
 #[pyclass]
 pub enum ShapeDescriptor {
     #[sexpr(anonymous)]
     Rectangle(RectangleDescriptor),
     #[sexpr(anonymous)]
     Circle(CircleDescriptor),
+    #[sexpr(anonymous)]
+    Polygon(PolygonDescriptor),
     // TODO: missing fields
     #[sexpr(anonymous)]
     Path(PathDescriptor),

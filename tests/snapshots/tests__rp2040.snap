@@ -227,6 +227,9 @@ Pcb {
                     rule_descriptor: None,
                 },
             ],
+            planes: Some(
+                [],
+            ),
             vias: ViaDescriptor {
                 padstack_ids: [
                     PadstackId(
