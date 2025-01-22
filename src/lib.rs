@@ -12,6 +12,9 @@ fn dsn(py: Python<'_>, m: &Bound<'_, PyModule>) -> PyResult<()> {
     numeric_module.add_class::<numeric::Number>()?;
     numeric_module.add_class::<numeric::Real>()?;
     numeric_module.add_class::<numeric::Rational>()?;
+    numeric_module.add_class::<numeric::PositiveInteger>()?;
+    numeric_module.add_class::<numeric::PositiveDimension>()?;
+    numeric_module.add_class::<numeric::DimensionUnit>()?;
 
     let shapes_module = PyModule::new(py, "shapes")?;
 
