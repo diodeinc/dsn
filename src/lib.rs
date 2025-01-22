@@ -46,6 +46,7 @@ fn dsn(py: Python<'_>, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<pcb::structure::DirectionType>()?;
     m.add_class::<pcb::structure::BoundaryDescriptor>()?;
     m.add_class::<pcb::structure::BoundaryDescriptorType>()?;
+    m.add_class::<pcb::structure::PlaneDescriptor>()?;
     m.add_class::<pcb::structure::RuleDescriptor>()?;
     m.add_class::<pcb::structure::RuleDescriptorType>()?;
     m.add_class::<pcb::structure::ClearanceDescriptor>()?;
