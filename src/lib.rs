@@ -70,6 +70,7 @@ fn dsn(py: Python<'_>, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<pcb::library::WindowDescriptor>()?;
     m.add_class::<pcb::library::AttachDescriptor>()?;
     m.add_class::<pcb::library::PadViaSiteDescriptor>()?;
+    m.add_class::<pcb::library::KeepoutDescriptor>()?;
 
     // Add network types
     m.add_class::<pcb::network::NetworkDescriptor>()?;
