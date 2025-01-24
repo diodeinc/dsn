@@ -336,7 +336,7 @@ pub mod placement {
     }
 
     #[derive(Sexpr, Debug, PartialEq, Clone)]
-    #[pyclass(eq, eq_int)]
+    #[pyclass(name = "PlacementSide", eq, eq_int)]
     pub enum Side {
         Front,
         Back,
@@ -388,7 +388,7 @@ pub mod library {
     }
 
     #[derive(Sexpr, Debug, Clone, PartialEq)]
-    #[pyclass(eq, eq_int)]
+    #[pyclass(name = "LibrarySide", eq, eq_int)]
     pub enum Side {
         Front,
         Back,
