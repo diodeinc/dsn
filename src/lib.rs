@@ -3,6 +3,7 @@ use pyo3::prelude::*;
 pub mod atoms;
 pub mod numeric;
 pub mod pcb;
+pub mod session;
 pub mod shapes;
 
 #[pymodule]
@@ -95,6 +96,14 @@ fn dsn(py: Python<'_>, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<pcb::wiring::WireShapeDescriptor>()?;
     m.add_class::<pcb::wiring::WireType>()?;
     m.add_class::<pcb::wiring::WireViaDescriptor>()?;
+
+    // Add session types
+    m.add_class::<session::Session>()?;
+    m.add_class::<session::RouteDescriptor>()?;
+    m.add_class::<session::StructureOutDescriptor>()?;
+    m.add_class::<session::LibraryOutDescriptor>()?;
+    m.add_class::<session::NetworkOutDescriptor>()?;
+    m.add_class::<session::NetOutDescriptor>()?;
 
     Ok(())
 }
