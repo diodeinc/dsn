@@ -1,10 +1,10 @@
 use crate::{atoms, numeric};
 use chumsky::Parser;
 use parser::Parsable;
-use parser_proc_macro::Sexpr;
+use parser_proc_macro::sexpr;
 use pyo3::prelude::*;
 
-#[derive(Sexpr, Debug, Clone)]
+#[derive(Debug, Clone)]
 #[sexpr(name = "path")]
 #[pyclass]
 pub struct PathDescriptor {
@@ -18,7 +18,7 @@ pub struct PathDescriptor {
     pub aperature_type: Option<AperatureType>,
 }
 
-#[derive(Sexpr, Debug, Clone)]
+#[derive(Debug, Clone)]
 #[sexpr(name = "rect")]
 #[pyclass]
 pub struct RectangleDescriptor {
@@ -28,7 +28,7 @@ pub struct RectangleDescriptor {
     pub corners: (Vertex, Vertex),
 }
 
-#[derive(Sexpr, Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Clone)]
 #[sexpr(anonymous)]
 #[pyclass]
 pub struct Vertex(
@@ -36,7 +36,8 @@ pub struct Vertex(
     #[pyo3(get, set, name = "y")] pub numeric::Number,
 );
 
-#[derive(Sexpr, Debug, Default, Clone, PartialEq)]
+#[derive(Debug, Default, Clone, PartialEq)]
+#[sexpr]
 #[pyclass(eq, eq_int)]
 pub enum AperatureType {
     #[default]
@@ -44,7 +45,7 @@ pub enum AperatureType {
     Square,
 }
 
-#[derive(Sexpr, Debug, Clone)]
+#[derive(Debug, Clone)]
 #[sexpr(name = "circle")]
 #[pyclass]
 pub struct CircleDescriptor {
@@ -56,7 +57,7 @@ pub struct CircleDescriptor {
     pub vertex: Option<Vertex>,
 }
 
-#[derive(Sexpr, Debug, Clone)]
+#[derive(Debug, Clone)]
 #[sexpr(name = "polygon")]
 #[pyclass]
 pub struct PolygonDescriptor {
@@ -70,7 +71,8 @@ pub struct PolygonDescriptor {
     pub aperature_type: Option<AperatureType>,
 }
 
-#[derive(Sexpr, Debug, Clone)]
+#[derive(Debug, Clone)]
+#[sexpr]
 #[pyclass]
 pub enum ShapeDescriptor {
     #[sexpr(anonymous)]

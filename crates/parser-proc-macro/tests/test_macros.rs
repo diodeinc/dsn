@@ -3,9 +3,8 @@ mod tests {
     use chumsky::Parser;
     use insta::assert_debug_snapshot;
     use parser::Parsable;
-    use parser_proc_macro::Sexpr;
+    use parser_proc_macro::sexpr;
 
-    #[derive(Sexpr)]
     #[sexpr(name = "test_struct")]
     struct TestUnitStruct;
 
@@ -16,7 +15,6 @@ mod tests {
         assert!(result.is_ok());
     }
 
-    #[derive(Sexpr)]
     #[sexpr(name = "custom_name")]
     struct TestStructCustomName {}
 
@@ -27,7 +25,8 @@ mod tests {
         assert!(result.is_ok());
     }
 
-    #[derive(Sexpr, Debug)]
+    #[derive(Debug)]
+    #[sexpr]
     #[allow(dead_code)]
     struct TestStructFields {
         a: String,
@@ -48,7 +47,8 @@ mod tests {
         "###);
     }
 
-    #[derive(Sexpr, Debug)]
+    #[derive(Debug)]
+    #[sexpr]
     #[allow(dead_code)]
     struct TestStructNamed {
         #[sexpr(name = "a")]
@@ -70,7 +70,8 @@ mod tests {
         "###);
     }
 
-    #[derive(Sexpr, Debug)]
+    #[derive(Debug)]
+    #[sexpr]
     #[allow(dead_code)]
     struct TestUnnamed(String);
 
@@ -81,7 +82,8 @@ mod tests {
         assert!(result.is_ok());
     }
 
-    #[derive(Sexpr, Debug)]
+    #[derive(Debug)]
+    #[sexpr]
     #[allow(dead_code)]
     enum TestEnum {
         A(String),
@@ -133,7 +135,8 @@ mod tests {
         assert_debug_snapshot!(result.unwrap(), @"D");
     }
 
-    #[derive(Sexpr, Debug)]
+    #[derive(Debug)]
+    #[sexpr]
     #[allow(dead_code)]
     struct TestOption {
         #[sexpr(name = "a")]
@@ -167,7 +170,8 @@ mod tests {
         "###);
     }
 
-    #[derive(Sexpr, Debug)]
+    #[derive(Debug)]
+    #[sexpr]
     #[allow(dead_code)]
     struct TestNestedOuter {
         #[sexpr(name = "a")]
@@ -176,9 +180,9 @@ mod tests {
         b: TestNestedInner,
     }
 
-    #[derive(Sexpr, Debug)]
-    #[allow(dead_code)]
+    #[derive(Debug)]
     #[sexpr(anonymous)]
+    #[allow(dead_code)]
     struct TestNestedInner {
         #[sexpr(name = "c")]
         c: String,
@@ -199,7 +203,8 @@ mod tests {
         "###);
     }
 
-    #[derive(Sexpr, Debug)]
+    #[derive(Debug)]
+    #[sexpr]
     #[allow(dead_code)]
     struct TestVec {
         #[sexpr(name = "items")]
@@ -230,7 +235,8 @@ mod tests {
         "###);
     }
 
-    #[derive(Sexpr, Debug)]
+    #[derive(Debug)]
+    #[sexpr(anonymous)]
     enum TestEnumAnonymous {
         A,
         B,
@@ -247,7 +253,8 @@ mod tests {
         "###);
     }
 
-    #[derive(Sexpr, Debug)]
+    #[derive(Debug)]
+    #[sexpr]
     enum TestEnumSingle {
         A,
     }
@@ -259,7 +266,8 @@ mod tests {
         assert!(result.is_ok());
     }
 
-    #[derive(Sexpr, Debug)]
+    #[derive(Debug)]
+    #[sexpr]
     enum TestEnumEmpty {}
 
     #[test]

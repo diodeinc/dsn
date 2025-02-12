@@ -2,10 +2,10 @@ use std::ops::Deref;
 
 use chumsky::prelude::*;
 use parser::Parsable;
-use parser_proc_macro::Sexpr;
+use parser_proc_macro::sexpr;
 use pyo3::prelude::*;
 
-#[derive(Sexpr, Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 #[pyclass]
 #[sexpr(anonymous)]
 pub struct Id(String);

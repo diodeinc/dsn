@@ -1,73 +1,88 @@
 use convert_case::{Case, Casing};
 use proc_macro2::TokenStream;
 use quote::{format_ident, quote, ToTokens};
-use syn::{parse_macro_input, DeriveInput};
+use syn::{parse_macro_input, Item, ItemEnum, ItemStruct};
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 struct SexprAttrs {
     name: Option<String>,
     anonymous: Option<bool>,
 }
 
-// TODO: this is horrendous
-impl TryFrom<&Vec<syn::Attribute>> for SexprAttrs {
-    type Error = syn::Error;
-
-    fn try_from(input: &Vec<syn::Attribute>) -> syn::Result<Self> {
-        let mut name: Option<String> = None;
-        let mut anonymous: Option<bool> = None;
-        for attr in input {
-            if attr.path().is_ident("sexpr") {
-                match &attr.meta {
-                    syn::Meta::List(list) => {
-                        let nested = list.parse_args::<syn::Meta>()?;
-                        match nested {
-                            syn::Meta::Path(path) if path.is_ident("anonymous") => {
-                                anonymous = Some(true);
-                            }
-                            syn::Meta::NameValue(name_value)
-                                if name_value.path.is_ident("name") =>
-                            {
-                                name = Some(
-                                    match syn::parse2::<syn::LitStr>(
-                                        name_value.value.to_token_stream(),
-                                    ) {
-                                        Ok(lit) => lit.value(),
-                                        Err(e) => {
-                                            return Err(syn::Error::new_spanned(
-                                                &name_value.value,
-                                                format!("Expected string literal for name attribute: {}", e),
-                                            ));
-                                        }
-                                    },
-                                );
-                            }
-                            _ => {
-                                return Err(syn::Error::new_spanned(
-                                    &nested,
-                                    "Expected either 'anonymous' or 'name = \"value\"'",
-                                ));
-                            }
-                        }
-                    }
-                    _ => {
-                        return Err(syn::Error::new_spanned(
-                            attr,
-                            "Expected #[sexpr(anonymous)] or #[sexpr(name = \"value\")]",
-                        ));
-                    }
-                }
-            }
-        }
-
-        if anonymous.is_some() && name.is_some() {
+impl SexprAttrs {
+    fn parse_meta_name_value(name_value: &syn::MetaNameValue) -> syn::Result<String> {
+        if !name_value.path.is_ident("name") {
             return Err(syn::Error::new_spanned(
-                input.first().unwrap(),
-                "anonymous and name attributes cannot be used together",
+                name_value,
+                "Expected 'name' attribute",
             ));
         }
 
-        Ok(Self { name, anonymous })
+        match syn::parse2::<syn::LitStr>(name_value.value.to_token_stream()) {
+            Ok(lit) => Ok(lit.value()),
+            Err(e) => Err(syn::Error::new_spanned(
+                &name_value.value,
+                format!("Expected string literal for name attribute: {}", e),
+            )),
+        }
+    }
+
+    fn parse_meta(meta: &syn::Meta) -> syn::Result<(Option<String>, Option<bool>)> {
+        match meta {
+            syn::Meta::Path(path) if path.is_ident("anonymous") => Ok((None, Some(true))),
+            syn::Meta::NameValue(name_value) => {
+                let name = Self::parse_meta_name_value(name_value)?;
+                Ok((Some(name), None))
+            }
+            _ => Err(syn::Error::new_spanned(
+                meta,
+                "Expected either 'anonymous' or 'name = \"value\"'",
+            )),
+        }
+    }
+
+    fn parse_attribute(attr: &syn::Attribute) -> syn::Result<(Option<String>, Option<bool>)> {
+        if !attr.path().is_ident("sexpr") {
+            return Ok((None, None));
+        }
+
+        match &attr.meta {
+            syn::Meta::List(list) => {
+                let nested = list.parse_args::<syn::Meta>()?;
+                Self::parse_meta(&nested)
+            }
+            _ => Err(syn::Error::new_spanned(
+                attr,
+                "Expected #[sexpr(anonymous)] or #[sexpr(name = \"value\")]",
+            )),
+        }
+    }
+
+    fn validate(name: Option<String>, anonymous: Option<bool>) -> syn::Result<Self> {
+        match (name.clone(), anonymous) {
+            (Some(_), Some(_)) => Err(syn::Error::new(
+                proc_macro2::Span::call_site(),
+                "anonymous and name attributes cannot be used together",
+            )),
+            _ => Ok(Self { name, anonymous }),
+        }
+    }
+}
+
+impl TryFrom<&Vec<syn::Attribute>> for SexprAttrs {
+    type Error = syn::Error;
+
+    fn try_from(attrs: &Vec<syn::Attribute>) -> syn::Result<Self> {
+        let mut name = None;
+        let mut anonymous = None;
+
+        for attr in attrs {
+            let (new_name, new_anonymous) = Self::parse_attribute(attr)?;
+            name = name.or(new_name);
+            anonymous = anonymous.or(new_anonymous);
+        }
+
+        Self::validate(name, anonymous)
     }
 }
 
@@ -271,12 +286,25 @@ impl<'a> FieldParserConfig<'a> {
     }
 }
 
-fn generate_pyo3_impl_if_enabled(input: &DeriveInput) -> syn::Result<TokenStream> {
-    let ident = &input.ident;
-    let is_pyclass = input
-        .attrs
-        .iter()
-        .any(|attr| attr.path().is_ident("pyclass"));
+fn generate_pyo3_impl_if_enabled(input: &Item) -> syn::Result<TokenStream> {
+    let ident = match input {
+        Item::Struct(item_struct) => &item_struct.ident,
+        Item::Enum(item_enum) => &item_enum.ident,
+        _ => return Ok(TokenStream::new()),
+    };
+
+    let is_pyclass = match input {
+        Item::Struct(item_struct) => item_struct
+            .attrs
+            .iter()
+            .any(|attr| attr.path().is_ident("pyclass")),
+        Item::Enum(item_enum) => item_enum
+            .attrs
+            .iter()
+            .any(|attr| attr.path().is_ident("pyclass")),
+        _ => false,
+    };
+
     if cfg!(feature = "pyo3") && is_pyclass {
         let field_ops: Vec<TokenStream> = vec![];
 
@@ -331,18 +359,20 @@ fn generate_pyo3_impl_if_enabled(input: &DeriveInput) -> syn::Result<TokenStream
 }
 
 /// Generate and return the Parsable implementation for a struct.
-fn derive_sexpr_impl_struct(input: &DeriveInput) -> syn::Result<TokenStream> {
+fn derive_sexpr_impl_struct(
+    input: &ItemStruct,
+    type_attrs: SexprAttrs,
+) -> syn::Result<TokenStream> {
     let type_ident = &input.ident;
     let type_name = type_ident.to_string();
     let type_name_snake = type_name.to_case(Case::Snake);
-    let type_attrs = SexprAttrs::try_from(&input.attrs)?;
-    let fields = match &input.data {
-        syn::Data::Struct(syn::DataStruct { fields, .. }) => fields,
-        _ => panic!("expected struct"),
-    };
     let parser_ident = &format_ident!("{}_parser", type_name_snake);
-    let struct_parser_config =
-        StructParserConfig::new(parser_ident, Some(type_name_snake), type_attrs, fields)?;
+    let struct_parser_config = StructParserConfig::new(
+        parser_ident,
+        Some(type_name_snake),
+        type_attrs,
+        &input.fields,
+    )?;
 
     let field_destructuring = if let Some(first_field) = struct_parser_config.fields.first() {
         let first_field_ident = &first_field.field_ident;
@@ -412,19 +442,15 @@ fn derive_sexpr_impl_struct(input: &DeriveInput) -> syn::Result<TokenStream> {
     Ok(implementation)
 }
 
-fn derive_sexpr_impl_enum(input: &DeriveInput) -> syn::Result<TokenStream> {
+fn derive_sexpr_impl_enum(input: &ItemEnum, _type_attrs: SexprAttrs) -> syn::Result<TokenStream> {
     let type_ident = &input.ident;
     let type_name = type_ident.to_string();
     let type_name_snake = type_name.to_case(Case::Snake);
-    let variants = match &input.data {
-        syn::Data::Enum(syn::DataEnum { variants, .. }) => variants,
-        _ => panic!("expected enum"),
-    };
 
     let mut variant_parsers: Vec<TokenStream> = Vec::new();
     let mut variant_parser_idents: Vec<syn::Ident> = Vec::new();
 
-    for variant in variants {
+    for variant in &input.variants {
         let variant_ident = &variant.ident;
         let variant_name = variant_ident.to_string();
         let variant_name_snake = variant_name.to_case(Case::Snake);
@@ -482,7 +508,7 @@ fn derive_sexpr_impl_enum(input: &DeriveInput) -> syn::Result<TokenStream> {
         variant_parsers.push(variant_parser);
     }
 
-    let implementation = if variants.is_empty() {
+    let implementation = if input.variants.is_empty() {
         quote!(
             impl<'a> parser::Parsable<'a> for #type_ident {
                 fn parser() -> chumsky::BoxedParser<'a, char, Self, chumsky::error::Simple<char>> {
@@ -515,25 +541,140 @@ fn derive_sexpr_impl_enum(input: &DeriveInput) -> syn::Result<TokenStream> {
     Ok(implementation)
 }
 
-#[proc_macro_derive(Sexpr, attributes(sexpr))]
-pub fn derive_sexpr(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
-    let input = parse_macro_input!(input as DeriveInput);
-    let expanded = match &input.data {
-        syn::Data::Struct(syn::DataStruct { .. }) => {
-            derive_sexpr_impl_struct(&input).expect("failed to generate sexpr impl for struct")
+fn strip_sexpr_field_attrs_from_enum(item: &mut ItemEnum) {
+    item.variants.iter_mut().for_each(|variant| {
+        variant.attrs.retain(|attr| !attr.path().is_ident("sexpr"));
+        variant.fields.iter_mut().for_each(|field| {
+            field.attrs.retain(|attr| !attr.path().is_ident("sexpr"));
+        });
+    });
+}
+
+fn strip_sexpr_field_attrs_from_struct(item: &mut ItemStruct) {
+    item.fields.iter_mut().for_each(|field| {
+        field.attrs.retain(|attr| !attr.path().is_ident("sexpr"));
+    });
+}
+
+fn strip_sexpr_field_attrs(item: &mut Item) {
+    match item {
+        Item::Struct(item_struct) => strip_sexpr_field_attrs_from_struct(item_struct),
+        Item::Enum(item_enum) => strip_sexpr_field_attrs_from_enum(item_enum),
+        _ => return,
+    };
+}
+
+#[proc_macro_attribute]
+pub fn sexpr(
+    attr: proc_macro::TokenStream,
+    item: proc_macro::TokenStream,
+) -> proc_macro::TokenStream {
+    let mut item_input = parse_macro_input!(item as Item);
+
+    // Handle empty attributes case
+    let type_attrs = if attr.is_empty() {
+        SexprAttrs::default()
+    } else {
+        let attr_input = parse_macro_input!(attr as syn::Meta);
+
+        // Parse the attribute arguments into our SexprAttrs structure
+        let (name, anonymous) = match SexprAttrs::parse_meta(&attr_input) {
+            Ok(result) => result,
+            Err(e) => return e.to_compile_error().into(),
+        };
+
+        match SexprAttrs::validate(name, anonymous) {
+            Ok(attrs) => attrs,
+            Err(e) => return e.to_compile_error().into(),
         }
-        syn::Data::Enum(syn::DataEnum { .. }) => {
-            derive_sexpr_impl_enum(&input).expect("failed to generate sexpr impl for enum")
-        }
+    };
+
+    let parser_impl = match &item_input {
+        Item::Struct(item_struct) => derive_sexpr_impl_struct(item_struct, type_attrs)
+            .expect("failed to generate sexpr impl for struct"),
+        Item::Enum(item_enum) => derive_sexpr_impl_enum(item_enum, type_attrs)
+            .expect("failed to generate sexpr impl for enum"),
         _ => panic!("sexpr only works with structs and enums"),
     };
 
-    let pyo3_impl = generate_pyo3_impl_if_enabled(&input).expect("failed to generate pyo3 impl");
+    let pyo3_impl =
+        generate_pyo3_impl_if_enabled(&item_input).expect("failed to generate pyo3 impl");
+
+    strip_sexpr_field_attrs(&mut item_input);
 
     let full_impl = quote! {
-        #expanded
+        #item_input
+        #parser_impl
         #pyo3_impl
     };
 
     TokenStream::from(full_impl).into()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use syn::parse_quote;
+
+    #[test]
+    fn test_sexpr_attrs_anonymous() {
+        let attrs: Vec<syn::Attribute> = parse_quote! {
+            #[sexpr(anonymous)]
+        };
+
+        let result = SexprAttrs::try_from(&attrs).unwrap();
+        assert!(result.anonymous.unwrap());
+        assert!(result.name.is_none());
+    }
+
+    #[test]
+    fn test_sexpr_attrs_named() {
+        let attrs: Vec<syn::Attribute> = parse_quote! {
+            #[sexpr(name = "test_name")]
+        };
+
+        let result = SexprAttrs::try_from(&attrs).unwrap();
+        assert!(result.anonymous.is_none());
+        assert_eq!(result.name.unwrap(), "test_name");
+    }
+
+    #[test]
+    fn test_sexpr_attrs_no_attributes() {
+        let attrs: Vec<syn::Attribute> = vec![];
+
+        let result = SexprAttrs::try_from(&attrs).unwrap();
+        assert!(result.anonymous.is_none());
+        assert!(result.name.is_none());
+    }
+
+    #[test]
+    fn test_sexpr_attrs_invalid_combination() {
+        let attrs: Vec<syn::Attribute> = parse_quote! {
+            #[sexpr(anonymous)]
+            #[sexpr(name = "test")]
+        };
+
+        assert!(SexprAttrs::try_from(&attrs).is_err());
+    }
+
+    #[test]
+    fn test_sexpr_attrs_invalid_format() {
+        // Test invalid name value
+        let attrs: Vec<syn::Attribute> = parse_quote! {
+            #[sexpr(name = 123)]
+        };
+        assert!(SexprAttrs::try_from(&attrs).is_err());
+
+        // Test invalid attribute format
+        let attrs: Vec<syn::Attribute> = parse_quote! {
+            #[sexpr = "invalid"]
+        };
+        assert!(SexprAttrs::try_from(&attrs).is_err());
+
+        // Test unknown attribute
+        let attrs: Vec<syn::Attribute> = parse_quote! {
+            #[sexpr(unknown)]
+        };
+        assert!(SexprAttrs::try_from(&attrs).is_err());
+    }
 }

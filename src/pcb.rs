@@ -1,10 +1,11 @@
 use crate::{atoms, numeric, shapes};
 use chumsky::prelude::*;
 use parser::Parsable;
-use parser_proc_macro::Sexpr;
+use parser_proc_macro::sexpr;
 use pyo3::prelude::*;
 
-#[derive(Sexpr, Debug, Clone)]
+#[derive(Debug, Clone)]
+#[sexpr]
 #[pyclass]
 pub struct Pcb {
     #[pyo3(get, set)]
@@ -29,7 +30,7 @@ pub struct Pcb {
     pub wiring: Option<wiring::WiringDescriptor>,
 }
 
-#[derive(Sexpr, Debug, Clone)]
+#[derive(Debug, Clone)]
 #[sexpr(name = "parser")]
 #[pyclass]
 pub struct ParserDescriptor {
@@ -50,7 +51,7 @@ pub struct ParserDescriptor {
     // TODO: missing fields
 }
 
-#[derive(Sexpr, Debug, Clone)]
+#[derive(Debug, Clone)]
 #[sexpr(name = "resolution")]
 #[pyclass]
 pub struct ResolutionDescriptor {
@@ -60,7 +61,7 @@ pub struct ResolutionDescriptor {
     pub value: numeric::PositiveInteger,
 }
 
-#[derive(Sexpr, Debug, Clone)]
+#[derive(Debug, Clone)]
 #[sexpr(name = "unit")]
 #[pyclass]
 pub struct UnitDescriptor {
@@ -68,7 +69,7 @@ pub struct UnitDescriptor {
     pub unit: numeric::DimensionUnit,
 }
 
-#[derive(Sexpr, Debug, Clone)]
+#[derive(Debug, Clone)]
 #[sexpr(name = "constant")]
 #[pyclass]
 pub struct Constant(
@@ -76,7 +77,8 @@ pub struct Constant(
     #[pyo3(get, set, name = "second")] pub atoms::Id,
 );
 
-#[derive(Sexpr, Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
+#[sexpr]
 #[pyclass(eq, eq_int)]
 pub enum QuoteChar {
     #[sexpr(name = "\"")]
@@ -91,7 +93,7 @@ pub enum QuoteChar {
 pub mod structure {
     use super::*;
 
-    #[derive(Sexpr, Debug, Clone)]
+    #[derive(Debug, Clone)]
     #[sexpr(name = "structure")]
     #[pyclass]
     pub struct StructureDescriptor {
@@ -112,7 +114,7 @@ pub mod structure {
         pub rules: RuleDescriptor,
     }
 
-    #[derive(Sexpr, Debug, Clone)]
+    #[derive(Debug, Clone)]
     #[sexpr(name = "layer")]
     #[pyclass]
     pub struct LayerDescriptor {
@@ -129,8 +131,9 @@ pub mod structure {
         // TODO: missing fields
     }
 
-    #[derive(Sexpr, Debug, Clone, PartialEq)]
+    #[derive(Debug, Clone, PartialEq)]
     #[pyclass(eq, eq_int)]
+    #[sexpr]
     pub enum LayerType {
         Signal,
         Power,
@@ -138,7 +141,7 @@ pub mod structure {
         Jumper,
     }
 
-    #[derive(Sexpr, Debug, Clone)]
+    #[derive(Debug, Clone)]
     #[sexpr(name = "property")]
     #[pyclass]
     pub struct UserPropertyDescriptor {
@@ -146,7 +149,7 @@ pub mod structure {
         pub descriptors: Vec<PropertyValueDescriptor>,
     }
 
-    #[derive(Sexpr, Debug, Clone)]
+    #[derive(Debug, Clone)]
     #[sexpr(name = "")]
     #[pyclass]
     pub struct PropertyValueDescriptor {
@@ -156,7 +159,8 @@ pub mod structure {
         pub value: PropertyValue,
     }
 
-    #[derive(Sexpr, Debug, Clone)]
+    #[derive(Debug, Clone)]
+    #[sexpr]
     #[pyclass]
     pub enum PropertyValue {
         #[sexpr(anonymous)]
@@ -165,8 +169,9 @@ pub mod structure {
         String(atoms::Id),
     }
 
-    #[derive(Sexpr, Debug, Clone, PartialEq)]
+    #[derive(Debug, Clone, PartialEq)]
     #[pyclass(eq, eq_int)]
+    #[sexpr]
     pub enum DirectionType {
         Horizontal,
         Vertical,
@@ -177,7 +182,7 @@ pub mod structure {
         Off,
     }
 
-    #[derive(Sexpr, Debug, Clone)]
+    #[derive(Debug, Clone)]
     #[sexpr(name = "boundary")]
     #[pyclass]
     pub struct BoundaryDescriptor {
@@ -187,7 +192,8 @@ pub mod structure {
         pub rule_descriptor: Option<RuleDescriptor>,
     }
 
-    #[derive(Sexpr, Debug, Clone)]
+    #[derive(Debug, Clone)]
+    #[sexpr]
     #[pyclass]
     pub enum BoundaryDescriptorType {
         #[sexpr(anonymous)]
@@ -196,7 +202,7 @@ pub mod structure {
         Rectangle(shapes::RectangleDescriptor),
     }
 
-    #[derive(Sexpr, Debug, Clone)]
+    #[derive(Debug, Clone)]
     #[sexpr(name = "plane")]
     #[pyclass]
     pub struct PlaneDescriptor {
@@ -208,7 +214,7 @@ pub mod structure {
         pub windows: Option<Vec<WindowDescriptor>>,
     }
 
-    #[derive(Sexpr, Debug, Clone)]
+    #[derive(Debug, Clone)]
     #[sexpr(name = "window")]
     #[pyclass]
     pub struct WindowDescriptor {
@@ -216,7 +222,7 @@ pub mod structure {
         pub shape: shapes::ShapeDescriptor,
     }
 
-    #[derive(Sexpr, Debug, Clone)]
+    #[derive(Debug, Clone)]
     #[sexpr(name = "rule")]
     #[pyclass]
     pub struct RuleDescriptor {
@@ -224,7 +230,8 @@ pub mod structure {
         pub descriptors: Vec<RuleDescriptorType>,
     }
 
-    #[derive(Sexpr, Debug, Clone)]
+    #[derive(Debug, Clone)]
+    #[sexpr]
     #[pyclass]
     pub enum RuleDescriptorType {
         #[sexpr(anonymous)]
@@ -233,7 +240,7 @@ pub mod structure {
         Width(numeric::PositiveDimension),
     }
 
-    #[derive(Sexpr, Debug, Clone)]
+    #[derive(Debug, Clone)]
     #[sexpr(name = "clearance")]
     #[pyclass]
     pub struct ClearanceDescriptor {
@@ -244,7 +251,8 @@ pub mod structure {
         pub types: Option<Vec<ClearanceType>>,
     }
 
-    #[derive(Sexpr, Debug, Clone)]
+    #[derive(Debug, Clone)]
+    #[sexpr]
     #[pyclass]
     pub enum ClearanceType {
         SmdViaSameNet(),
@@ -263,7 +271,7 @@ pub mod structure {
         DefaultSmd(),
     }
 
-    #[derive(Sexpr, Debug, Clone)]
+    #[derive(Debug, Clone)]
     #[sexpr(name = "via")]
     #[pyclass]
     pub struct ViaDescriptor {
@@ -273,7 +281,7 @@ pub mod structure {
         pub spare_padstack_ids: Option<Vec<PadstackId>>,
     }
 
-    #[derive(Sexpr, Debug, Clone)]
+    #[derive(Debug, Clone)]
     #[sexpr(anonymous)]
     #[pyclass]
     pub struct PadstackId(pub atoms::Id);
@@ -290,7 +298,7 @@ pub mod structure {
 pub mod placement {
     use super::*;
 
-    #[derive(Sexpr, Debug, Clone)]
+    #[derive(Debug, Clone)]
     #[sexpr(name = "placement")]
     #[pyclass]
     pub struct PlacementDescriptor {
@@ -299,7 +307,7 @@ pub mod placement {
         pub components: Vec<ComponentInstance>,
     }
 
-    #[derive(Sexpr, Debug, Clone)]
+    #[derive(Debug, Clone)]
     #[sexpr(name = "component")]
     #[pyclass]
     pub struct ComponentInstance {
@@ -309,7 +317,7 @@ pub mod placement {
         pub placement: Vec<PlacementReference>,
     }
 
-    #[derive(Sexpr, Debug, PartialEq, Clone)]
+    #[derive(Debug, Clone, PartialEq)]
     #[sexpr(name = "place")]
     #[pyclass]
     pub struct PlacementReference {
@@ -323,7 +331,7 @@ pub mod placement {
         pub part_number: Option<atoms::Id>,
     }
 
-    #[derive(Sexpr, Debug, PartialEq, Clone)]
+    #[derive(Debug, Clone, PartialEq)]
     #[sexpr(anonymous)]
     #[pyclass]
     pub struct PlacementReferenceLocation {
@@ -335,7 +343,8 @@ pub mod placement {
         pub rotation: numeric::Number,
     }
 
-    #[derive(Sexpr, Debug, PartialEq, Clone)]
+    #[derive(Debug, Clone, PartialEq)]
+    #[sexpr]
     #[pyclass(name = "PlacementSide", eq, eq_int)]
     pub enum Side {
         Front,
@@ -350,7 +359,7 @@ pub mod library {
 
     use super::*;
 
-    #[derive(Sexpr, Debug, Clone)]
+    #[derive(Debug, Clone)]
     #[pyclass]
     #[sexpr(name = "library")]
     pub struct LibraryDescriptor {
@@ -365,7 +374,7 @@ pub mod library {
         // TODO: missing fields
     }
 
-    #[derive(Sexpr, Debug, Clone)]
+    #[derive(Debug, Clone)]
     #[sexpr(name = "image")]
     #[pyclass]
     pub struct ImageDescriptor {
@@ -387,15 +396,16 @@ pub mod library {
         // TODO: missing fields
     }
 
-    #[derive(Sexpr, Debug, Clone, PartialEq)]
+    #[derive(Debug, Clone, PartialEq)]
     #[pyclass(name = "LibrarySide", eq, eq_int)]
+    #[sexpr]
     pub enum Side {
         Front,
         Back,
         Both,
     }
 
-    #[derive(Sexpr, Debug, Clone)]
+    #[derive(Debug, Clone)]
     #[sexpr(name = "")]
     #[pyclass]
     pub struct KeepoutDescriptor {
@@ -424,7 +434,8 @@ pub mod library {
         pub windows: Option<Vec<WindowDescriptor>>,
     }
 
-    #[derive(Sexpr, Debug, Clone, PartialEq, Eq)]
+    #[derive(Debug, Clone, PartialEq, Eq)]
+    #[sexpr]
     #[pyclass(eq, eq_int)]
     pub enum KeepoutType {
         Keepout,
@@ -435,7 +446,7 @@ pub mod library {
         ElongateKeepout,
     }
 
-    #[derive(Sexpr, Debug, Clone, PartialEq, Eq)]
+    #[derive(Debug, Clone, PartialEq, Eq)]
     #[pyclass(eq, eq_int)]
     #[sexpr(anonymous)]
     pub enum SpacingType {
@@ -450,7 +461,7 @@ pub mod library {
         AreaArea,
     }
 
-    #[derive(Sexpr, Debug, Clone)]
+    #[derive(Debug, Clone)]
     #[sexpr(name = "spacing")]
     #[pyclass]
     pub struct SpacingDescriptor {
@@ -467,7 +478,7 @@ pub mod library {
         pub side: Option<placement::Side>,
     }
 
-    #[derive(Sexpr, Debug, Clone)]
+    #[derive(Debug, Clone)]
     #[sexpr(name = "outline")]
     #[pyclass]
     pub struct OutlineDescriptor {
@@ -475,7 +486,7 @@ pub mod library {
         pub shape: shapes::ShapeDescriptor,
     }
 
-    #[derive(Sexpr, Debug, Clone)]
+    #[derive(Debug, Clone)]
     #[sexpr(name = "pin")]
     #[pyclass]
     pub struct PinDescriptor {
@@ -490,7 +501,8 @@ pub mod library {
         pub property: Option<UserPropertyDescriptor>,
     }
 
-    #[derive(Sexpr, Debug, Clone)]
+    #[derive(Debug, Clone)]
+    #[sexpr]
     #[pyclass]
     pub enum PinRefDescriptor {
         #[sexpr(anonymous)]
@@ -514,7 +526,7 @@ pub mod library {
         },
     }
 
-    #[derive(Sexpr, Debug, Clone)]
+    #[derive(Debug, Clone)]
     #[pyclass]
     #[sexpr(name = "jumper")]
     pub struct JumperDescriptor {
@@ -529,7 +541,7 @@ pub mod library {
         pub height: Option<numeric::Number>,
     }
 
-    #[derive(Sexpr, Debug, Clone)]
+    #[derive(Debug, Clone)]
     #[sexpr(name = "padstack")]
     #[pyclass]
     pub struct PadstackDescriptor {
@@ -554,7 +566,7 @@ pub mod library {
         pub rule: Option<ClearanceDescriptor>,
     }
 
-    #[derive(Sexpr, Debug, Clone)]
+    #[derive(Debug, Clone)]
     #[sexpr(name = "shape")]
     #[pyclass]
     pub struct PadstackShapeDescriptor {
@@ -569,7 +581,7 @@ pub mod library {
         pub windows: Option<Vec<WindowDescriptor>>,
     }
 
-    #[derive(Sexpr, Debug, Clone)]
+    #[derive(Debug, Clone)]
     #[pyclass]
     #[sexpr(name = "window")]
     pub struct WindowDescriptor {
@@ -577,7 +589,7 @@ pub mod library {
         pub shape: ShapeDescriptor,
     }
 
-    #[derive(Sexpr, Debug, Clone, PartialEq)]
+    #[derive(Debug, Clone, PartialEq)]
     #[pyclass]
     #[sexpr(name = "attach")]
     pub enum AttachDescriptor {
@@ -590,7 +602,7 @@ pub mod library {
         None(),
     }
 
-    #[derive(Sexpr, Debug, Clone)]
+    #[derive(Debug, Clone)]
     #[sexpr(name = "via_site")]
     #[pyclass]
     pub enum PadViaSiteDescriptor {
@@ -606,7 +618,7 @@ pub mod network {
 
     use super::*;
 
-    #[derive(Sexpr, Debug, Clone)]
+    #[derive(Debug, Clone)]
     #[sexpr(name = "network")]
     #[pyclass]
     pub struct NetworkDescriptor {
@@ -616,7 +628,7 @@ pub mod network {
         pub classes: Option<Vec<ClassDescriptor>>,
     }
 
-    #[derive(Sexpr, Debug, Clone)]
+    #[derive(Debug, Clone)]
     #[sexpr(name = "net")]
     #[pyclass]
     pub struct NetDescriptor {
@@ -658,14 +670,15 @@ pub mod network {
         }
     }
 
-    #[derive(Sexpr, Debug, Clone)]
+    #[derive(Debug, Clone)]
+    #[sexpr]
     #[pyclass]
     pub enum NetPinsOrOrder {
         Pins(Vec<PinReference>),
         Order(Vec<PinReference>),
     }
 
-    #[derive(Sexpr, Debug, Clone)]
+    #[derive(Debug, Clone)]
     #[sexpr(name = "class")]
     #[pyclass]
     pub struct ClassDescriptor {
@@ -682,7 +695,8 @@ pub mod network {
         // TODO: missing fields
     }
 
-    #[derive(Sexpr, Debug, Clone)]
+    #[derive(Debug, Clone)]
+    #[sexpr]
     #[pyclass]
     pub enum NetOrCompositeList {
         #[sexpr(anonymous)]
@@ -691,7 +705,7 @@ pub mod network {
         CompositeNameList(CompositeNameList),
     }
 
-    #[derive(Sexpr, Debug, Clone)]
+    #[derive(Debug, Clone)]
     #[sexpr(name = "composite")]
     #[pyclass]
     pub struct CompositeNameList {
@@ -707,7 +721,7 @@ pub mod network {
         pub suffix: Option<atoms::Id>,
     }
 
-    #[derive(Sexpr, Debug, Clone)]
+    #[derive(Debug, Clone)]
     #[sexpr(name = "circuit")]
     #[pyclass]
     pub struct CircuitDescriptor {
@@ -715,7 +729,7 @@ pub mod network {
         pub descriptors: Vec<CircuitDescriptorType>,
     }
 
-    #[derive(Sexpr, Debug, Clone)]
+    #[derive(Debug, Clone)]
     #[sexpr(name = "layer_rule")]
     #[pyclass]
     pub struct LayerRuleDescriptor {
@@ -725,7 +739,8 @@ pub mod network {
         pub rule: structure::RuleDescriptor,
     }
 
-    #[derive(Sexpr, Debug, Clone)]
+    #[derive(Debug, Clone)]
+    #[sexpr]
     #[pyclass]
     pub enum CircuitDescriptorType {
         // TODO: missing types
@@ -739,7 +754,7 @@ pub mod network {
 pub mod wiring {
     use super::*;
 
-    #[derive(Sexpr, Debug, Clone)]
+    #[derive(Debug, Clone)]
     #[sexpr(name = "wiring")]
     #[pyclass]
     pub struct WiringDescriptor {
@@ -749,7 +764,8 @@ pub mod wiring {
         // TODO: missing fields
     }
 
-    #[derive(Sexpr, Debug, Clone)]
+    #[derive(Debug, Clone)]
+    #[sexpr]
     #[pyclass]
     pub enum WireDescriptor {
         #[sexpr(anonymous)]
@@ -759,7 +775,7 @@ pub mod wiring {
         // TODO: missing fields
     }
 
-    #[derive(Sexpr, Debug, Clone)]
+    #[derive(Debug, Clone)]
     #[sexpr(name = "wire")]
     #[pyclass]
     pub struct WireShapeDescriptor {
@@ -774,7 +790,8 @@ pub mod wiring {
         // TODO: missing fields
     }
 
-    #[derive(Sexpr, Debug, Clone, PartialEq)]
+    #[derive(Debug, Clone, PartialEq)]
+    #[sexpr]
     #[pyclass(eq, eq_int)]
     pub enum WireType {
         Fix,
@@ -783,7 +800,7 @@ pub mod wiring {
         Protect,
     }
 
-    #[derive(Sexpr, Debug, Clone)]
+    #[derive(Debug, Clone)]
     #[sexpr(name = "via")]
     #[pyclass]
     pub struct WireViaDescriptor {

@@ -1,9 +1,9 @@
 use chumsky::{prelude::just, text::digits, Parser};
 use parser::Parsable;
-use parser_proc_macro::Sexpr;
+use parser_proc_macro::sexpr;
 use pyo3::prelude::*;
 
-#[derive(Sexpr, Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Clone)]
 #[pyclass]
 #[sexpr(anonymous)]
 pub struct Number {
@@ -29,7 +29,7 @@ impl Number {
     }
 }
 
-#[derive(Sexpr, Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Clone)]
 #[sexpr(anonymous)]
 pub enum NumberType {
     #[sexpr(anonymous)]
@@ -40,7 +40,7 @@ pub enum NumberType {
     PosInt(PositiveInteger),
 }
 
-#[derive(Sexpr, Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 #[sexpr(anonymous)]
 pub enum Sign {
     #[sexpr(name = "+")]
@@ -155,7 +155,8 @@ impl From<Rational> for f64 {
     }
 }
 
-#[derive(Sexpr, Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
+#[sexpr]
 #[pyclass(eq, eq_int)]
 pub enum DimensionUnit {
     Inch,
@@ -165,7 +166,7 @@ pub enum DimensionUnit {
     Um,
 }
 
-#[derive(Sexpr, Debug, Clone)]
+#[derive(Debug, Clone)]
 #[sexpr(anonymous)]
 #[pyclass]
 // TODO: Technically this is broader than it should be, we should reject a negative number here.
