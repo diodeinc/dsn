@@ -105,5 +105,9 @@ fn dsn(py: Python<'_>, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<session::NetworkOutDescriptor>()?;
     m.add_class::<session::NetOutDescriptor>()?;
 
+    // Add atoms types
+    m.add_class::<atoms::Id>()?;
+    m.add_class::<atoms::Bool>()?;
+
     Ok(())
 }
