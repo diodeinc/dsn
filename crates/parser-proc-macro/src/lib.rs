@@ -338,16 +338,19 @@ fn generate_pyo3_impl_if_enabled(input: &Item) -> syn::Result<TokenStream> {
             #[::pyo3::pymethods]
             impl #ident {
                 #[new]
-                fn new(s: &str) -> Self {
+                fn new(s: &str) -> ::pyo3::PyResult<Self> {
                     let res = Self::parser().parse(s);
 
-                    if let Err(e) = &res {
-                        for err in e.into_iter() {
-                            parser::PrettyPrintError::pretty_print(&err, s);
+                    match res {
+                        Ok(result) => Ok(result),
+                        Err(e) => {
+                            for err in e.into_iter() {
+                                parser::PrettyPrintError::pretty_print(&err, s);
+                            }
+
+                            Err(::pyo3::exceptions::PyValueError::new_err("Failed to parse input string."))
                         }
                     }
-
-                    res.expect("parse failed")
                 }
 
                 #(#field_ops)*
