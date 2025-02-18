@@ -230,6 +230,7 @@ Pcb {
             planes: Some(
                 [],
             ),
+            keepouts: [],
             vias: ViaDescriptor {
                 padstack_ids: [
                     PadstackId(

@@ -108,6 +108,8 @@ pub mod structure {
         pub planes: Option<Vec<PlaneDescriptor>>,
         // TODO: missing fields
         #[pyo3(get, set)]
+        pub keepouts: Vec<library::KeepoutDescriptor>,
+        #[pyo3(get, set)]
         pub vias: ViaDescriptor,
         // TODO: missing fields
         #[pyo3(get, set)]
