@@ -4,8 +4,8 @@ use parser_proc_macro::sexpr;
 use pyo3::prelude::*;
 
 #[derive(Debug, PartialEq, Clone)]
-#[pyclass]
 #[sexpr(anonymous)]
+#[pyclass]
 pub struct Number {
     pub sign: Option<Sign>,
     pub number_type: NumberType,

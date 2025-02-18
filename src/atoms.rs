@@ -6,8 +6,8 @@ use parser_proc_macro::sexpr;
 use pyo3::prelude::*;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
-#[pyclass]
 #[sexpr(anonymous)]
+#[pyclass]
 pub struct Id(String);
 
 #[pymethods]
