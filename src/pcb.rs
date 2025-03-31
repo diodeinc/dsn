@@ -658,7 +658,7 @@ pub mod network {
         fn parser() -> chumsky::BoxedParser<'a, char, PinReference, chumsky::error::Simple<char>> {
             // For some reason I can't get this to work with atoms::Id::parser(), so falling back
             // to a simpler strategy. This is less expressive than it should be.
-            let id_parser = filter(|c: &char| c.is_ascii_alphanumeric()).repeated();
+            let id_parser = filter(|c: &char| c.is_ascii_alphanumeric() || *c == '_').repeated();
 
             id_parser
                 .then_ignore(just("-"))
